@@ -6,51 +6,48 @@ Works in:
 - your local **Windows PowerShell → WSL Ubuntu**
 - **Cursor Cloud Agents** (via `.cursor/environment.json`)
 
-> This cloud agent **cannot open PowerShell on your PC**. You run the login commands locally.
+> A **Cloud Agent cannot use your local PowerShell** until a **My Machines worker** is running on your PC (or you use Cursor Desktop local agent). Unblocking scripts ≠ connecting this cloud session.
 
-## 1) Open PowerShell on your computer
+## 1) Ensure WSL + Ubuntu on your PC (recommended)
 
-Press `Win`, type **PowerShell**, open **Windows PowerShell**.
-
-## 2) One-command login + full install
-
-If you already cloned this repo on Windows:
+Open **Windows PowerShell as Administrator** and paste:
 
 ```powershell
-cd path\to\downloads
-powershell -ExecutionPolicy Bypass -File .\scripts\setup-from-powershell.ps1
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force
+cd $HOME
+if (-not (Test-Path .\downloads\.git)) { git clone https://github.com/maximumskif/downloads.git downloads }
+cd .\downloads
+git fetch origin
+git checkout cursor/smart-contract-env-setup-6634
+powershell -ExecutionPolicy Bypass -File .\scripts\ensure-wsl-ubuntu.ps1
 ```
 
 That script will:
-1. confirm WSL + Ubuntu
-2. clone/update this repo inside Ubuntu
-3. install Rust, Node/npm, Foundry, Hardhat, Python web3/trading packages
-4. verify them
-5. drop you into an Ubuntu login shell
-
-### First-time only (if Ubuntu/WSL missing)
-
-```powershell
-wsl --install -d Ubuntu
-```
-
-Reboot if Windows asks. Finish the Ubuntu username/password setup, then re-run `setup-from-powershell.ps1`.
+1. unblock scripts
+2. update WSL, install Ubuntu if needed, set it as default
+3. enable systemd
+4. install Rust / Node / Foundry / Hardhat / Python trading deps inside Ubuntu
+5. verify from Windows via `wsl`
 
 ### Quick login only (after install)
 
 ```powershell
-wsl -d Ubuntu
+wsl
 ```
 
-or:
+### Let Cloud Agents run commands on your PC
+
+Keep this running in PowerShell:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\enter-ubuntu.ps1
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force
+agent login
+agent worker start --name "my-windows-pc"
 ```
 
-## 3) Run Ubuntu tools from PowerShell
+Then start a **new** Cloud Agent and choose environment **my-windows-pc**.
 
-After install, either stay inside Ubuntu, or load the bridge:
+## 2) Run Ubuntu tools from PowerShell
 
 ```powershell
 . .\scripts\wsl-bridge.ps1
@@ -75,7 +72,7 @@ Invoke-Ubuntu "python3 -c `"import web3,ccxt; print('ok')`""
 $HOME/.cargo/bin          # rustc, cargo
 $HOME/.foundry/bin        # forge, cast, anvil
 $HOME/.nvm/.../bin        # node, npm, npx, hardhat
-$HOME/.local/bin          # pip --user scripts
+$HOME/.venvs/artb-trading # python/pip packages
 $HOME/.toolchain-path.sh  # sourced by ~/.bashrc
 ```
 
