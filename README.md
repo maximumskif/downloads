@@ -1,37 +1,65 @@
 # downloads
 
-Toolchain bootstrap for **smart contracts** and **ARTB trading** development after a Windows reset.
+Portable toolchain for **smart contracts** and **ARTB trading**.
 
-## Sign into Ubuntu from PowerShell
+Works in:
+- your local **Windows PowerShell → WSL Ubuntu**
+- **Cursor Cloud Agents** (via `.cursor/environment.json`)
 
-Open **PowerShell** and run:
+> This cloud agent **cannot open PowerShell on your PC**. You run the login commands locally.
+
+## 1) Open PowerShell on your computer
+
+Press `Win`, type **PowerShell**, open **Windows PowerShell**.
+
+## 2) One-command login + full install
+
+If you already cloned this repo on Windows:
 
 ```powershell
-wsl -d Ubuntu
+cd path\to\downloads
+powershell -ExecutionPolicy Bypass -File .\scripts\setup-from-powershell.ps1
 ```
 
-First time after a reset (if Ubuntu/WSL is missing):
+That script will:
+1. confirm WSL + Ubuntu
+2. clone/update this repo inside Ubuntu
+3. install Rust, Node/npm, Foundry, Hardhat, Python web3/trading packages
+4. verify them
+5. drop you into an Ubuntu login shell
+
+### First-time only (if Ubuntu/WSL missing)
 
 ```powershell
 wsl --install -d Ubuntu
 ```
 
-Reboot if prompted, finish the Ubuntu username/password setup, then `wsl -d Ubuntu` again.
+Reboot if Windows asks. Finish the Ubuntu username/password setup, then re-run `setup-from-powershell.ps1`.
 
-Helper script (from this repo on Windows):
+### Quick login only (after install)
+
+```powershell
+wsl -d Ubuntu
+```
+
+or:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\enter-ubuntu.ps1
 ```
 
-## Install everything inside Ubuntu
+## 3) Run Ubuntu tools from PowerShell
 
-```bash
-bash scripts/wsl-bootstrap.sh
-bash scripts/verify-toolchain.sh
+After install, either stay inside Ubuntu, or load the bridge:
+
+```powershell
+. .\scripts\wsl-bridge.ps1
+Forge --version
+Npm -v
+Invoke-Ubuntu "python3 -c `"import web3,ccxt; print('ok')`""
 ```
 
-That installs / verifies:
+## What gets installed
 
 | Tool | Purpose |
 |------|---------|
@@ -41,12 +69,16 @@ That installs / verifies:
 | Foundry (`forge` / `cast` / `anvil`) | Solidity compile, test, local chain |
 | Hardhat + OpenZeppelin + `solc` | Alternative Solidity stack |
 
-## Expected PATH locations (Ubuntu / WSL)
+## PATH (inside Ubuntu)
 
 ```text
 $HOME/.cargo/bin          # rustc, cargo
 $HOME/.foundry/bin        # forge, cast, anvil
 $HOME/.nvm/.../bin        # node, npm, npx, hardhat
 $HOME/.local/bin          # pip --user scripts
-/usr/bin/python3
+$HOME/.toolchain-path.sh  # sourced by ~/.bashrc
 ```
+
+## Future Cursor agents
+
+`.cursor/environment.json` runs `.cursor/install.sh` on agent boot so new agents get the same toolchain after this branch is merged (or when agents start from this branch).
