@@ -1,0 +1,4 @@
+{
+  "name": "smart-contract-artb-toolchain",
+  "install": "bash .cursor/install.sh"
+}
