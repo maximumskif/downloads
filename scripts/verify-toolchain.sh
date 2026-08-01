@@ -2,10 +2,14 @@
 # Print versions and PATH locations for the smart-contract / trading toolchain.
 set -euo pipefail
 
-export PATH="${HOME}/.foundry/bin:${HOME}/.cargo/bin:${HOME}/.local/bin:${PATH}"
+export PATH="${HOME}/.venvs/artb-trading/bin:${HOME}/.foundry/bin:${HOME}/.cargo/bin:${HOME}/.local/bin:${PATH}"
 export NVM_DIR="${HOME}/.nvm"
 # shellcheck disable=SC1091
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+# shellcheck disable=SC1091
+[ -f "${HOME}/.toolchain-path.sh" ] && . "${HOME}/.toolchain-path.sh"
+# shellcheck disable=SC1091
+[ -f "${HOME}/.venvs/artb-trading/bin/activate" ] && . "${HOME}/.venvs/artb-trading/bin/activate"
 
 ok()   { printf '  [OK]   %-12s %s\n' "$1" "$2"; }
 miss() { printf '  [MISS] %-12s %s\n' "$1" "$2"; FAIL=1; }

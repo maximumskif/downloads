@@ -49,16 +49,19 @@ fi
 export PATH="${HOME}/.foundry/bin:${PATH}"
 foundryup
 
-echo "[install] Python packages"
-python3 -m pip install --user --upgrade pip || python3 -m pip install --upgrade pip
+echo "[install] Python packages (venv — works on Ubuntu 24.04 PEP 668)"
+VENV_DIR="${HOME}/.venvs/artb-trading"
+mkdir -p "${HOME}/.venvs"
+if [ ! -x "${VENV_DIR}/bin/python" ]; then
+  python3 -m venv "$VENV_DIR"
+fi
+# shellcheck disable=SC1091
+. "${VENV_DIR}/bin/activate"
+python -m pip install --upgrade pip
 if [ -f requirements.txt ]; then
-  python3 -m pip install --user -r requirements.txt || \
-    python3 -m pip install --break-system-packages -r requirements.txt
+  python -m pip install -r requirements.txt
 else
-  python3 -m pip install --user \
-    web3 eth-account eth-utils hexbytes eth-abi \
-    python-dotenv aiohttp websockets pandas ccxt numpy requests || \
-  python3 -m pip install --break-system-packages \
+  python -m pip install \
     web3 eth-account eth-utils hexbytes eth-abi \
     python-dotenv aiohttp websockets pandas ccxt numpy requests
 fi
@@ -71,9 +74,11 @@ fi
 # Persist PATH for interactive + non-interactive shells
 PROFILE_SNIPPET="${HOME}/.toolchain-path.sh"
 cat > "$PROFILE_SNIPPET" <<'EOF'
-export PATH="$HOME/.local/bin:$HOME/.foundry/bin:$HOME/.cargo/bin:/usr/local/cargo/bin:$PATH"
+export PATH="$HOME/.venvs/artb-trading/bin:$HOME/.local/bin:$HOME/.foundry/bin:$HOME/.cargo/bin:/usr/local/cargo/bin:$PATH"
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+# Prefer project venv python/pip when present
+[ -f "$HOME/.venvs/artb-trading/bin/activate" ] && . "$HOME/.venvs/artb-trading/bin/activate"
 EOF
 
 for rc in "$HOME/.bashrc" "$HOME/.profile"; do
